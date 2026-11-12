@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.config import settings
@@ -53,21 +53,25 @@ def update_heater_escalation(db: Session, room: Room, reading: Reading) -> None:
     if not room.heater_on or room.heater_on_since is None:
         return
 
+    alarm = active_alarm(db, room.id, "equipment_fault")
+
+    if reading.temperature >= settings.warn_below_c:
+        if alarm:
+            alarm.cleared_at = utcnow()
+        return
+
     elapsed = (utcnow() - room.heater_on_since).total_seconds()
     if elapsed < settings.heater_escalate_after_s:
         return
 
-    start_temp = db.scalar(
-        select(Reading.temperature)
+    lowest_temp = db.scalar(
+        select(func.min(Reading.temperature))
         .where(Reading.room_id == room.id, Reading.created_at >= room.heater_on_since)
-        .order_by(Reading.created_at)
-        .limit(1)
     )
-    if start_temp is None:
+    if lowest_temp is None:
         return
 
-    alarm = active_alarm(db, room.id, "equipment_fault")
-    if reading.temperature - start_temp >= settings.heater_min_rise_c:
+    if reading.temperature - lowest_temp >= settings.heater_min_rise_c:
         if alarm:
             alarm.cleared_at = utcnow()
         return
