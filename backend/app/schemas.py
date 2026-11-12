@@ -43,3 +43,15 @@ class AlarmOut(BaseModel):
     raised_at: datetime
     acknowledged_at: datetime | None
     cleared_at: datetime | None
+
+class HeaterCommand(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    on: bool
+
+
+class SimulationCommand(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    cold_fault: bool | None = None
+    heater_failed: bool | None = None

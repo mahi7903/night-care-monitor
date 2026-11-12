@@ -9,6 +9,8 @@ class Settings(BaseSettings):
     warn_below_c: float = 18.0
     critical_below_c: float = 16.0
     clear_deadband_c: float = 0.5
+    heater_escalate_after_s: int = 30
+    heater_min_rise_c: float = 0.5
 
 
 settings = Settings()

@@ -47,3 +47,34 @@ def update_cold_alarm(db: Session, room: Room, reading: Reading) -> None:
     alarm.severity = severity
     alarm.priority = priority
     alarm.message = message
+
+
+def update_heater_escalation(db: Session, room: Room, reading: Reading) -> None:
+    if not room.heater_on or room.heater_on_since is None:
+        return
+
+    elapsed = (utcnow() - room.heater_on_since).total_seconds()
+    if elapsed < settings.heater_escalate_after_s:
+        return
+
+    start_temp = db.scalar(
+        select(Reading.temperature)
+        .where(Reading.room_id == room.id, Reading.created_at >= room.heater_on_since)
+        .order_by(Reading.created_at)
+        .limit(1)
+    )
+    if start_temp is None:
+        return
+
+    alarm = active_alarm(db, room.id, "equipment_fault")
+    if reading.temperature - start_temp >= settings.heater_min_rise_c:
+        if alarm:
+            alarm.cleared_at = utcnow()
+        return
+
+    if alarm is None:
+        db.add(Alarm(
+            room_id=room.id, kind="equipment_fault", severity="red", priority="urgent",
+            message=f"{room.name}: heater on for {int(elapsed)}s with no temperature rise. "
+                    "Equipment fault: escalate to on-call",
+        ))
