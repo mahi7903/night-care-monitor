@@ -1,0 +1,54 @@
+:root {
+  --bg: #d9dcde;
+  --panel: #eceeef;
+  --text: #1f2326;
+  --muted: #5d656b;
+  --border: #b4babf;
+  --yellow: #f2c200;
+  --red: #d32f2f;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  color: var(--text);
+  background: var(--bg);
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; }
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 24px;
+  background: #4a5257;
+  color: #fff;
+}
+.topbar h1 { font-size: 1.2rem; margin: 0; }
+.status { font-size: 0.9rem; }
+.status.error { background: var(--red); padding: 4px 10px; border-radius: 4px; }
+
+main { padding: 24px; }
+.rooms {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.room-card {
+  background: var(--panel);
+  border: 2px solid var(--border);
+  border-radius: 6px;
+  padding: 16px;
+}
+.room-card.state-yellow { border: 4px solid var(--yellow); }
+.room-card.state-red { border: 4px solid var(--red); }
+
+.room-header { display: flex; justify-content: space-between; align-items: center; }
+.room-header h2 { margin: 0; font-size: 1.1rem; }
+.temp { font-size: 2.6rem; font-weight: 600; margin: 12px 0; }
+.meta { display: flex; gap: 24px; margin: 0; }
+.meta dt { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; }
+.meta dd { margin: 0; font-weight: 600; }
+
+.badge { padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; }
+.badge-yellow { background: var(--yellow); color: #000; }
+.badge-red { background: var(--red); color: #fff; }

@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
-
+from datetime import timedelta
 from app.alarms import update_cold_alarm
 from app.database import get_db
 
@@ -16,6 +16,13 @@ router = APIRouter(prefix="/api")
 @router.get("/rooms", response_model=list[RoomOut])
 def list_rooms(db: Session = Depends(get_db)):
     return db.scalars(select(Room).order_by(Room.id)).all()
+
+
+@router.get("/readings", response_model=list[ReadingOut])
+def list_readings(minutes: int = Query(default=10, ge=1, le=60), db: Session = Depends(get_db)):
+    since = utcnow() - timedelta(minutes=minutes)
+    query = select(Reading).where(Reading.created_at >= since).order_by(Reading.created_at)
+    return db.scalars(query).all()
 
 
 @router.post("/readings", response_model=ReadingOut, status_code=status.HTTP_201_CREATED)
