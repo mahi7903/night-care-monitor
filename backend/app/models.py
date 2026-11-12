@@ -53,3 +53,11 @@ class Alarm(Base):
     cleared_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
     room: Mapped[Room] = relationship()
+
+
+class StaffUser(Base):
+    __tablename__ = "staff_users"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    username: Mapped[str] = mapped_column(String(50), unique=True)
+    password_hash: Mapped[str] = mapped_column(String(255))

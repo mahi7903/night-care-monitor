@@ -1,8 +1,24 @@
+const TOKEN_KEY = 'nightcare_token'
+
+export const getToken = () => sessionStorage.getItem(TOKEN_KEY)
+export const setToken = (token) => sessionStorage.setItem(TOKEN_KEY, token)
+export const clearToken = () => sessionStorage.removeItem(TOKEN_KEY)
+
+export class AuthError extends Error {}
+
 async function request(path, options = {}) {
+  const token = getToken()
   const res = await fetch(path, {
-    headers: { 'Content-Type': 'application/json' },
     ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
   })
+  if (res.status === 401) {
+    clearToken()
+    throw new AuthError('Please sign in')
+  }
   if (!res.ok) {
     throw new Error(`${res.status} ${res.statusText}`)
   }
@@ -10,6 +26,8 @@ async function request(path, options = {}) {
 }
 
 export const api = {
+  login: (username, password) =>
+    request('/api/auth/login', { method: 'POST', body: JSON.stringify({ username, password }) }),
   rooms: () => request('/api/rooms'),
   readings: (minutes = 10) => request(`/api/readings?minutes=${minutes}`),
   alarms: (activeOnly = false) => request(`/api/alarms?active_only=${activeOnly}`),

@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useState } from 'react'
-import { api } from './api'
+import { api, AuthError, clearToken, getToken } from './api'
 import AlarmPanel from './AlarmPanel'
 import RoomCard from './RoomCard'
 import TrendChart from './TrendChart'
+import Login from './Login'
 
 const POLL_MS = 2000
 
 export default function App() {
+  const [signedIn, setSignedIn] = useState(() => Boolean(getToken()))
   const [rooms, setRooms] = useState([])
   const [readings, setReadings] = useState([])
   const [alarms, setAlarms] = useState([])
@@ -26,24 +28,34 @@ export default function App() {
       setError(null)
       setLastUpdated(new Date())
     } catch (err) {
-      setError(err.message)
+      if (err instanceof AuthError) setSignedIn(false)
+      else setError(err.message)
     }
   }, [])
 
   useEffect(() => {
+    if (!signedIn) return
     refresh()
     const timer = setInterval(refresh, POLL_MS)
     return () => clearInterval(timer)
-  }, [refresh])
+  }, [refresh, signedIn])
 
   async function runAction(action) {
     try {
       await action()
       await refresh()
     } catch (err) {
-      setError(err.message)
+      if (err instanceof AuthError) setSignedIn(false)
+      else setError(err.message)
     }
   }
+
+  function signOut() {
+    clearToken()
+    setSignedIn(false)
+  }
+
+  if (!signedIn) return <Login onLogin={() => setSignedIn(true)} />
 
   const activeAlarms = alarms.filter((a) => a.cleared_at === null)
 
@@ -58,6 +70,7 @@ export default function App() {
               ? `Updated ${lastUpdated.toLocaleTimeString('en-GB')}`
               : 'Connecting...'}
         </span>
+        <button className="signout" onClick={signOut}>Sign out</button>
       </header>
       <main>
         <section className="rooms">

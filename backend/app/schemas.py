@@ -55,3 +55,16 @@ class SimulationCommand(BaseModel):
 
     cold_fault: bool | None = None
     heater_failed: bool | None = None
+
+
+class LoginIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    username: str = Field(min_length=1, max_length=50)
+    password: str = Field(min_length=1, max_length=128)
+
+
+class TokenOut(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    username: str

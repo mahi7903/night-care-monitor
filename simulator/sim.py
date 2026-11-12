@@ -5,6 +5,7 @@ import time
 import httpx
 
 API_URL = os.getenv("API_URL", "http://127.0.0.1:8000")
+DEVICE_API_KEY = os.environ["DEVICE_API_KEY"]
 INTERVAL = float(os.getenv("SIM_INTERVAL", "3"))
 EMPTY_ROOMS = {n.strip() for n in os.getenv("SIM_EMPTY_ROOMS", "Room 3").split(",") if n.strip()}
 
@@ -27,7 +28,7 @@ def next_temperature(temp, room):
 def main():
     temps = {}
     print(f"Simulator sending to {API_URL} every {INTERVAL}s")
-    with httpx.Client(base_url=API_URL, timeout=5) as client:
+    with httpx.Client(base_url=API_URL, timeout=5, headers={"X-API-Key": DEVICE_API_KEY}) as client:
         while True:
             try:
                 resp = client.get("/api/rooms")

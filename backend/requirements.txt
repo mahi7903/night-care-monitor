@@ -4,3 +4,5 @@ uvicorn[standard]==0.54.0
 sqlalchemy==2.1.8
 psycopg[binary]==3.3.8
 pydantic-settings==2.16.2
+pyjwt==2.15.1
+pwdlib[argon2]==0.3.1

@@ -11,6 +11,12 @@ class Settings(BaseSettings):
     clear_deadband_c: float = 0.5
     heater_escalate_after_s: int = 30
     heater_min_rise_c: float = 0.5
+    jwt_secret: str
+    jwt_algorithm: str = "HS256"
+    access_token_minutes: int = 480
+    device_api_key: str
+    seed_staff_username: str | None = None
+    seed_staff_password: str | None = None
 
 
 settings = Settings()
