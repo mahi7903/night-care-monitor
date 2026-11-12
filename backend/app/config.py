@@ -6,6 +6,9 @@ class Settings(BaseSettings):
 
     database_url: str
     seed_rooms: list[str] = ["Room 1", "Room 2", "Room 3"]
+    warn_below_c: float = 18.0
+    critical_below_c: float = 16.0
+    clear_deadband_c: float = 0.5
 
 
 settings = Settings()

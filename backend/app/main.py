@@ -1,5 +1,5 @@
 from contextlib import asynccontextmanager
-
+from app.api import router
 from fastapi import FastAPI
 from sqlalchemy import select
 
@@ -19,7 +19,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="Night Care Room Monitor", lifespan=lifespan)
-
+app.include_router(router)
 
 @app.get("/health")
 def health():
