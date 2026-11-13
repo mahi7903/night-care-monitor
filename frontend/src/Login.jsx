@@ -15,10 +15,12 @@ export default function Login({ onLogin }) {
       const data = await api.login(username, password)
       setToken(data.access_token)
       onLogin()
-    } catch {
-      setError('Invalid username or password')
-    } finally {
-      setBusy(false)
+      } catch (err) {
+      setError(
+        err.message.startsWith('429')
+          ? 'Too many failed attempts. Please wait 5 minutes.'
+          : 'Invalid username or password',
+      )
     }
   }
 

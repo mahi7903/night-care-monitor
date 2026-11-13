@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from datetime import timedelta
@@ -13,6 +13,9 @@ from app.schemas import (
 from app.auth import (
     create_access_token, require_device, require_staff, require_staff_or_device, verify_password,
 )
+from app.ratelimit import login_limiter
+
+
 router = APIRouter(prefix="/api")
 
 
@@ -97,8 +100,18 @@ def simulate(room_id: int, command: SimulationCommand, db: Session = Depends(get
     return room
 
 @router.post("/auth/login", response_model=TokenOut)
-def login(payload: LoginIn, db: Session = Depends(get_db)):
+def login(payload: LoginIn, request: Request, db: Session = Depends(get_db)):
+    client_ip = request.client.host if request.client else "unknown"
+    key = f"{client_ip}:{payload.username.lower()}"
+    if login_limiter.is_blocked(key):
+        raise HTTPException(
+            status_code=429, detail="Too many failed attempts. Try again in a few minutes."
+        )
+
     user = db.scalar(select(StaffUser).where(StaffUser.username == payload.username))
     if user is None or not verify_password(payload.password, user.password_hash):
+        login_limiter.record_failure(key)
         raise HTTPException(status_code=401, detail="Invalid username or password")
+
+    login_limiter.reset(key)
     return TokenOut(access_token=create_access_token(user), username=user.username)

@@ -17,6 +17,11 @@ class Settings(BaseSettings):
     device_api_key: str
     seed_staff_username: str | None = None
     seed_staff_password: str | None = None
+    login_max_failures: int = 5
+    login_window_s: int = 300
+    cors_origins: list[str] = []
+    app_db_user: str | None = None
+    app_db_password: str | None = None
 
 
 settings = Settings()

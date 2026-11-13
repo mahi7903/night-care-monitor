@@ -16,19 +16,33 @@ services:
       timeout: 3s
       retries: 10
 
-  api:
+  init:
     build: ./backend
+    command: ["python", "-m", "app.init_db"]
     environment:
       DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
       JWT_SECRET: ${JWT_SECRET}
       DEVICE_API_KEY: ${DEVICE_API_KEY}
       SEED_STAFF_USERNAME: ${SEED_STAFF_USERNAME}
       SEED_STAFF_PASSWORD: ${SEED_STAFF_PASSWORD}
-    ports:
-      - "8000:8000"
+      APP_DB_USER: ${APP_DB_USER}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD}
     depends_on:
       db:
         condition: service_healthy
+
+  api:
+    build: ./backend
+    environment:
+      DATABASE_URL: postgresql+psycopg://${APP_DB_USER}:${APP_DB_PASSWORD}@db:5432/${POSTGRES_DB}
+      JWT_SECRET: ${JWT_SECRET}
+      DEVICE_API_KEY: ${DEVICE_API_KEY}
+      CORS_ORIGINS: ${CORS_ORIGINS:-[]}
+    ports:
+      - "8000:8000"
+    depends_on:
+      init:
+        condition: service_completed_successfully
 
   simulator:
     build: ./simulator
@@ -47,3 +61,5 @@ services:
 
 volumes:
   pgdata:
+
+

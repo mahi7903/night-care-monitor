@@ -11,13 +11,14 @@ TEST_DATABASE_URL = os.environ["TEST_DATABASE_URL"]
 os.environ["DATABASE_URL"] = TEST_DATABASE_URL
 os.environ.setdefault("JWT_SECRET", "test-only-secret-that-is-long-enough-123")
 os.environ.setdefault("DEVICE_API_KEY", "test-device-key")
+os.environ.setdefault("CORS_ORIGINS", '["http://allowed.test"]')
 
 from app.auth import create_access_token, hash_password  # noqa: E402
 from app.config import settings  # noqa: E402
 from app.database import Base, get_db  # noqa: E402
 from app.main import app  # noqa: E402
 from app.models import Room, StaffUser  # noqa: E402
-
+from app.ratelimit import login_limiter  # noqa: E402
 engine = create_engine(TEST_DATABASE_URL)
 TestingSession = sessionmaker(bind=engine, autoflush=False)
 
@@ -43,6 +44,7 @@ def staff_user(db):
 
 @pytest.fixture
 def anon_client(db, staff_user):
+    login_limiter.reset()
     def override_get_db():
         yield db
 
