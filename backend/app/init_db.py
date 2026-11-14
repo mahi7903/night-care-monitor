@@ -16,9 +16,11 @@ def seed():
             db.add_all([Room(name=name) for name in settings.seed_rooms])
         username, password = settings.seed_staff_username, settings.seed_staff_password
         if username and password:
-            exists = db.scalar(select(StaffUser).where(StaffUser.username == username))
-            if exists is None:
+            user = db.scalar(select(StaffUser).where(StaffUser.username == username))
+            if user is None:
                 db.add(StaffUser(username=username, password_hash=hash_password(password)))
+            else:
+                user.password_hash = hash_password(password)
         db.commit()
 
 
