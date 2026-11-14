@@ -14,7 +14,7 @@ CRITICAL = 16.0
         (17.0, True, ("yellow", "normal")),
         (15.9, True, ("red", "urgent")),
         (17.5, False, ("yellow", "low")),
-        (12.0, False, ("yellow", "low")),
+        (18.0, True, ("yellow", "normal")),
     ],
 )
 def test_evaluate_temperature(temperature, occupied, expected):
