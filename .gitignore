@@ -14,3 +14,6 @@ dist/
 # Editor / OS
 .vscode/
 Thumbs.db
+
+#azure
+.env.azure
